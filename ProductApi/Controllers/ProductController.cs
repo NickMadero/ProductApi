@@ -20,7 +20,7 @@ namespace ProductApi.Controllers
         // GET: api/<ProductController>
         // returns all products
         [HttpGet]
-        public ActionResult<ProductModel> GetProduct()
+        public ActionResult <List<ProductModel>> GetProduct()
         {   
             // Current is Static Variable that is why we can call through the class.
             return  Ok(_productDataStore.Product);
