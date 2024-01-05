@@ -23,7 +23,7 @@ namespace ProductApi.Controllers
         public ActionResult<ProductModel> GetProduct()
         {   
             // Current is Static Variable that is why we can call through the class.
-            return  new JsonResult (_productDataStore.Product);
+            return  Ok(_productDataStore.Product);
 
             // this endpoint is working 
         }
@@ -32,7 +32,7 @@ namespace ProductApi.Controllers
         [HttpPost]
         public ActionResult<ProductModel> PostProduct(string productName,ProductModel model)
         {
-            //storing max value increment it by 1 
+            //LINQ, storing max Id increment it by 1 
             var MaxProductId = _productDataStore.Product.Max(p => p.product_id + 1 );
 
             // create a new product object to be inserted into the ProductDataStore 
@@ -44,7 +44,7 @@ namespace ProductApi.Controllers
             };
             // adding the new product to the productDataStore
             _productDataStore.Product.Add(newProduct);
-            return new JsonResult(newProduct);
+            return Ok(newProduct);
 
             //this endpoint is working
         }
@@ -53,11 +53,11 @@ namespace ProductApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<ProductModel> SpecificProduct(int id) 
         {
-            // this variable uses LINQ Language Intergrated Query. This is basically mysql code but written out in c#
+            // this variable uses LINQ Language Intergrated Query. basically mysql code but written out in c#
             var ProductQuery = from product in _productDataStore.Product
                                where product.product_id == id
                                select product;
-            return new JsonResult(ProductQuery);
+            return Ok(ProductQuery);
 
             //this endpoint is working
 
