@@ -3,7 +3,8 @@
 @using System.Text.Json
 @using System.Text
 @inject IProductDataStore  _productDataStore
-@inject HttpClient ProductApi
+@inject IHttpClientFactory Factory
+
 @rendermode InteractiveServer
 <h3>Product</h3>
 <!--
@@ -31,13 +32,11 @@
 
   <button class="btn btn-primary" @onclick="PostProduct">Click to add product</button>
 <button class="btn btn-primary" @onclick="GetSpecificProduct">Click to get product</button>
+<button class="btn btn-primary" @onclick="DeleteProduct">Click to delete product</button>
 @code {
     List<ProductModel> products = new List<ProductModel>();
 
-    // private void InsertProductHandler()
-    // {
-    //     _ = PostProduct();
-    // }
+    HttpClient ProductApi;
     private async Task PostProduct()
     {
         // ProductApi.BaseAddress = new Uri("https://localhost:7023/api/Product/");
@@ -45,7 +44,7 @@
 
         var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
 
-        HttpResponseMessage response = await ProductApi.PostAsJsonAsync("https://localhost:7023/api/Product/postProduct", product);
+        HttpResponseMessage response = await ProductApi.PostAsJsonAsync("Product/postProduct", product);
 
         if (response.IsSuccessStatusCode)
         {
@@ -59,33 +58,54 @@
     {
         int productID = 1;
 
-        HttpResponseMessage response = await ProductApi.GetAsync($"https://localhost:7023/api/Product/{productID}");
+        HttpResponseMessage response = await ProductApi.GetAsync($"Product/{productID}");
+
 
         if (response.IsSuccessStatusCode)
         {
             var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+            await GetProduct();
             products = responseData;
         }
 
         //methods is able to return the product
     }
 
+    private async Task DeleteProduct()
+    {
+        int productID = 1;
+
+        HttpResponseMessage response = await ProductApi.DeleteAsync($"Product/{productID}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+            products = responseData;
+            await GetProduct();
+        }
+
+        // method is working 
+    }
+
+
     private async Task GetProduct()
     {
-        ProductApi.BaseAddress =  new Uri ("https://localhost:7023/api/");
+
         HttpResponseMessage response = await ProductApi.GetAsync("Product");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
-                products = responseData;
-            }
-            //method is able to return all the products
-         
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+            products = responseData;
+
+        }
+        //method is able to return all the products
+
     }
 
     protected override async Task OnInitializedAsync()
     {
+         ProductApi = Factory.CreateClient("ProductApi");
         await GetProduct();
     }
 }
