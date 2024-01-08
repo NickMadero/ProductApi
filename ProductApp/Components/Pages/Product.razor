@@ -30,6 +30,7 @@
 </div>
 
   <button class="btn btn-primary" @onclick="PostProduct">Click to add product</button>
+<button class="btn btn-primary" @onclick="GetSpecificProduct">Click to get product</button>
 @code {
     List<ProductModel> products = new List<ProductModel>();
 
@@ -39,22 +40,35 @@
     // }
     private async Task PostProduct()
     {
-          // ProductApi.BaseAddress = new Uri("https://localhost:7023/api/Product/");
-            string productName = "keyboard"; // Set your product name here or get it dynamically
+        // ProductApi.BaseAddress = new Uri("https://localhost:7023/api/Product/");
+        string productName = "keyboard"; // Set your product name here or get it dynamically
 
-            var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
+        var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
 
-            HttpResponseMessage response = await ProductApi.PostAsJsonAsync("https://localhost:7023/api/Product/postProduct", product);
+        HttpResponseMessage response = await ProductApi.PostAsJsonAsync("https://localhost:7023/api/Product/postProduct", product);
 
-            if (response.IsSuccessStatusCode)
-            {
-                await GetProduct();
-            }
-          
+        if (response.IsSuccessStatusCode)
+        {
+            await GetProduct();
+        }
+        // method is able to create a product
     }
 
-   
 
+    private async Task GetSpecificProduct()
+    {
+        int productID = 1;
+
+        HttpResponseMessage response = await ProductApi.GetAsync($"https://localhost:7023/api/Product/{productID}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+            products = responseData;
+        }
+
+        //methods is able to return the product
+    }
 
     private async Task GetProduct()
     {
@@ -66,6 +80,7 @@
                 var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
                 products = responseData;
             }
+            //method is able to return all the products
          
     }
 
