@@ -22,6 +22,11 @@ namespace ProductApi.Controllers
         [HttpGet]
         public ActionResult <List<ProductModel>> GetProduct()
         {   
+            if (!_productDataStore.Product.Any() )
+            {
+                return NotFound();
+            }
+
             // Current is Static Variable that is why we can call through the class.
             return  Ok(_productDataStore.Product);
 
@@ -29,7 +34,7 @@ namespace ProductApi.Controllers
         }
 
         // insert a new product to our dataStore
-        [HttpPost]
+        [HttpPost("postProduct")]
         public ActionResult<ProductModel> PostProduct(string productName,ProductModel model)
         {
             //LINQ, storing max Id increment it by 1 

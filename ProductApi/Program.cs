@@ -11,7 +11,16 @@ builder.Services.AddSwaggerGen();
 
 // create ProductDataStore instance anywhere its injected
 builder.Services.AddSingleton<IProductDataStore, ProductDataStore>();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:7122") // Replace XXXX with your ProductApp port
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+}); ;
 
 var app = builder.Build();
 
@@ -22,6 +31,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseRouting();
+
+app.UseCors("AllowSpecificOrigin");
 
 app.UseHttpsRedirection();
 

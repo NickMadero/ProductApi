@@ -1,0 +1,74 @@
+﻿@page "/product"
+@using ProductApi.Models
+@using System.Text.Json
+@using System.Text
+@inject IProductDataStore  _productDataStore
+@inject HttpClient ProductApi
+@rendermode InteractiveServer
+<h3>Product</h3>
+<!--
+   
+-->
+<!-- Render products -->
+<div>
+
+ 
+
+
+
+    @if (products == null)
+    {
+        <p>No products available or error fetching data.</p>
+    }
+    else
+    {
+        @foreach (var product in products)
+        {
+            <p>@product.product_id. @product.product_name</p>
+        }
+    }
+</div>
+
+  <button class="btn btn-primary" @onclick="InsertProductHandler">Click to add product</button>
+@code {
+    List<ProductModel> products = new List<ProductModel>();
+
+    private void InsertProductHandler()
+    {
+        _ = PostProduct();
+    }
+    private async Task PostProduct()
+    {
+            ProductApi.BaseAddress = new Uri("https://localhost:7023/api/");
+            string productName = "keyboard"; // Set your product name here or get it dynamically
+
+            var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
+
+            HttpResponseMessage response = await ProductApi.PostAsJsonAsync("Product/postProduct", product);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await GetProduct();
+            }
+          
+    }
+
+
+    private async Task GetProduct()
+    {
+        ProductApi.BaseAddress =  new Uri ("https://localhost:7023/api/");
+        HttpResponseMessage response = await ProductApi.GetAsync("Product");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+                products = responseData;
+            }
+         
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProduct();
+    }
+}
