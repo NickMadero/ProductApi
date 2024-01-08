@@ -35,7 +35,7 @@ namespace ProductApi.Controllers
 
         // insert a new product to our dataStore
         [HttpPost("postProduct")]
-        public ActionResult<ProductModel> PostProduct(string productName,ProductModel model)
+        public ActionResult<ProductModel> PostProduct(ProductModel model)
         {
             //LINQ, storing max Id increment it by 1 
             var MaxProductId = _productDataStore.Product.Max(p => p.product_id + 1 );
@@ -44,7 +44,7 @@ namespace ProductApi.Controllers
             ProductModel newProduct = new ProductModel()
             {
                 product_id = MaxProductId,
-                product_name = productName,
+                product_name = model.product_name,
 
             };
             // adding the new product to the productDataStore
