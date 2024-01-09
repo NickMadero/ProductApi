@@ -13,8 +13,6 @@
 <!-- Render products -->
 <div>
 
- 
-
 
 
     @if (products == null)
@@ -30,17 +28,28 @@
     }
 </div>
 
-  <button class="btn btn-primary" @onclick="PostProduct">Click to add product</button>
-<button class="btn btn-primary" @onclick="GetSpecificProduct">Click to get product</button>
-<button class="btn btn-primary" @onclick="DeleteProduct">Click to delete product</button>
+
+<input @bind="productName" placeholder="add new product" />
+  <button class="btn btn-primary" @onclick="() =>PostProduct(productName)">Click to add product</button>
+
+
+<input @bind="productId" placeholder="search product number" />
+<button class="btn btn-primary"  @onclick="() => GetSpecificProduct(productId)">Click to get product</button>
+
+<input @bind="productId" placeholder="delete product number" />
+<button class="btn btn-primary" @onclick="() => DeleteProduct(productId)">Click to delete product</button>
 @code {
     List<ProductModel> products = new List<ProductModel>();
 
     HttpClient ProductApi;
-    private async Task PostProduct()
+
+    string productId = "";
+    string productName = "";
+
+    private async Task PostProduct(string productName)
     {
         // ProductApi.BaseAddress = new Uri("https://localhost:7023/api/Product/");
-        string productName = "keyboard"; // Set your product name here or get it dynamically
+
 
         var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
 
@@ -49,16 +58,17 @@
         if (response.IsSuccessStatusCode)
         {
             await GetProduct();
+            productName = "";
         }
         // method is able to create a product
     }
 
 
-    private async Task GetSpecificProduct()
+    private async Task GetSpecificProduct(string id)
     {
-        int productID = 1;
+        int.Parse(id);
 
-        HttpResponseMessage response = await ProductApi.GetAsync($"Product/{productID}");
+        HttpResponseMessage response = await ProductApi.GetAsync($"Product/{id}");
 
 
         if (response.IsSuccessStatusCode)
@@ -66,21 +76,22 @@
             var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
             await GetProduct();
             products = responseData;
+            productId = "";
         }
 
         //methods is able to return the product
     }
 
-    private async Task DeleteProduct()
+    private async Task DeleteProduct(string id)
     {
-        int productID = 1;
+        int.Parse(id);
+       
 
-        HttpResponseMessage response = await ProductApi.DeleteAsync($"Product/{productID}");
+        HttpResponseMessage response = await ProductApi.DeleteAsync($"Product/{id}");
 
         if (response.IsSuccessStatusCode)
         {
-            var responseData = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
-            products = responseData;
+            productId = "";
             await GetProduct();
         }
 
