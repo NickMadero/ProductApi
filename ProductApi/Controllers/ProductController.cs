@@ -1,55 +1,62 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DataLayer;
+using Microsoft.AspNetCore.Mvc;
 using ProductApi.Models;
-
+using System.Data.SqlClient;
 
 namespace ProductApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : ControllerBase 
     {
-        // injecting the IProductDataStore interface into the constructor
+        private readonly IProductRepository _ProductRepository;
+        private readonly IConfiguration _config; 
+      
         private readonly IProductDataStore _productDataStore;
-        public ProductController(IProductDataStore productDataStore)
+       
+
+        public ProductController(IProductDataStore productDataStore, IProductRepository ProductRepository, 
+            IConfiguration config)
         {
             //instance of ProductDataStore has been created
-                    _productDataStore = productDataStore;
+            _productDataStore = productDataStore;
+            _ProductRepository = ProductRepository;
+            _config = config;
         }
 
 
         // GET: api/<ProductController>
         // returns all products
         [HttpGet]
-        public ActionResult <List<ProductModel>> GetProduct()
-        {   
-            if (!_productDataStore.Product.Any() )
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> GetProduct()
+        {
 
-            // Current is Static Variable that is why we can call through the class.
-            return  Ok(_productDataStore.Product);
+            string sql = "SELECT * FROM product";
+            // var products = await _dataAccess.LoadData<ProductModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+            var products = await _ProductRepository.LoadData<ProductModel, dynamic>(sql, new { });
 
-            // this endpoint is working 
+            return Ok(products);
         }
 
         // insert a new product to our dataStore
         [HttpPost("postProduct")]
-        public ActionResult<ProductModel> PostProduct(ProductModel model)
+        public async Task<IActionResult> PostProduct( ProductModel product)
         {
-            //LINQ, storing max Id increment it by 1 
-            var MaxProductId = _productDataStore.Product.Max(p => p.product_id + 1 );
+            string sql = "INSERT INTO product (product_name) VALUES (@product_name);";
+            var newProduct = new {product_name =  product.product_name};
+            await _ProductRepository.SaveData(sql, newProduct);
+
 
             // create a new product object to be inserted into the ProductDataStore 
-            ProductModel newProduct = new ProductModel()
-            {
-                product_id = MaxProductId,
-                product_name = model.product_name,
+            //ProductModel newProduct = new ProductModel()
+            //{
+            //   // product_id = MaxProductId,
+            //    product_name = productname,
 
-            };
+            //};
             // adding the new product to the productDataStore
-            _productDataStore.Product.Add(newProduct);
-            return Ok(newProduct);
+            // _productDataStore.Product.Add(newProduct);
+            return Ok("new product added sucessfully");
 
             //this endpoint is working
         }

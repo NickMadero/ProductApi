@@ -4,7 +4,7 @@
 @using System.Text
 @inject IProductDataStore  _productDataStore
 @inject IHttpClientFactory Factory
-
+@using Newtonsoft.Json
 @rendermode InteractiveServer
 <h3>Product</h3>
 <!--
@@ -48,20 +48,35 @@
 
     private async Task PostProduct(string productName)
     {
-        // ProductApi.BaseAddress = new Uri("https://localhost:7023/api/Product/");
-
-
-        var product = new ProductModel { product_name = productName }; // Assuming ProductModel has a property for product_name
-
-        HttpResponseMessage response = await ProductApi.PostAsJsonAsync("Product/postProduct", product);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            await GetProduct();
-            productName = "";
+            var productModel = new ProductModel() {product_name = productName};
+
+            var contentData = new StringContent(JsonConvert.SerializeObject(productModel), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await ProductApi.PostAsync("Product/postProduct", contentData);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Response Content: {responseContent}");
+           
+            if (response.IsSuccessStatusCode)
+            {
+                await GetProduct();
+                productName = "";
+            }
+            else
+            {
+                // Handle error scenarios
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
         }
-        // method is able to create a product
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
     }
+
 
 
     private async Task GetSpecificProduct(string id)
